@@ -43,7 +43,7 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         const [eventsRes, alertsRes] = await Promise.all([
-          axios.get("${process.env.REACT_APP_API_URL}/api/crisis/events"),
+          axios.get(`${process.env.REACT_APP_API_URL}/api/crisis/events`),
           user?.email
             ? axios.get(`${process.env.REACT_APP_API_URL}/api/alerts/my/${user.email}`)
             : Promise.resolve({ data: [] }),
@@ -79,7 +79,7 @@ export default function Dashboard() {
         setAlerts((prev) => prev.filter((a) => a._id !== existing._id));
       } else {
         const res = await axios.post(
-          "${process.env.REACT_APP_API_URL}/api/alerts/subscribe",
+          `${process.env.REACT_APP_API_URL}/api/alerts/subscribe`,
           {
             region: event.region,
             countryCode: event.countryCode,

@@ -87,7 +87,7 @@ export default function RegionDetail() {
   const handleSubscribe = async () => {
     try {
       const res = await axios.post(
-        "${process.env.REACT_APP_API_URL}/api/alerts/subscribe",
+        `${process.env.REACT_APP_API_URL}/api/alerts/subscribe`,
         {
           region: events[0]?.region,
           countryCode,

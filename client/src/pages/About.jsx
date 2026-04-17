@@ -165,7 +165,7 @@ export default function About() {
 
   useEffect(() => {
     axios
-      .get("${process.env.REACT_APP_API_URL}/api/crisis/events")
+      .get(`${process.env.REACT_APP_API_URL}/api/crisis/events`)
       .then((res) => setEvents(res.data))
       .catch(() => {});
   }, []);

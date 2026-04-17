@@ -16,8 +16,8 @@ export default function Login() {
     setLoading(true); setMessage('');
     try {
       const url = isRegister
-        ? '${process.env.REACT_APP_API_URL}/api/auth/register'
-        : '${process.env.REACT_APP_API_URL}/api/auth/login';
+        ? `${process.env.REACT_APP_API_URL}/api/auth/register`
+        : `${process.env.REACT_APP_API_URL}/api/auth/login`;
       const res = await axios.post(url, form);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user',  JSON.stringify(res.data.user));
