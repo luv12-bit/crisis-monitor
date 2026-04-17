@@ -10,7 +10,7 @@ const fetchLiveNews = require('./services/newsFetcher');
 const alertRoutes = require('./routes/alertRoutes');
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: "*",}));
 app.use(express.json());
 
 app.use('/api/auth',   authRoutes);
