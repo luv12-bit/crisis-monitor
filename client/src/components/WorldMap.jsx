@@ -496,6 +496,7 @@ export default function WorldMap({ events = [] }) {
             subdomains="abcd"
             maxZoom={19}
           />
+          console.log("NEW BUILD DEPLOYED");
           {/* ── MARKERS ── */}
           {Object.entries(processedData).map(([key, data]) => {
             const type = getTopType(data.events);
