@@ -167,6 +167,30 @@ export default function MLPredictions() {
   const [error, setError] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(cached ? new Date() : null);
 
+  useEffect(() => {
+    const fetchML = async () => {
+      try {
+        console.log("Calling ML API...");
+
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/ml/predict`,
+        );
+
+        console.log("ML Response:", res.data);
+
+        setPredictions(res.data);
+        setCache(res.data);
+        setLastUpdated(new Date());
+      } catch (err) {
+        console.error("ML Error:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!cached) fetchML();
+  }, []);
   if (error)
     return (
       <div
