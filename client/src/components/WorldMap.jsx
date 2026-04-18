@@ -489,7 +489,7 @@ export default function WorldMap({ events = [] }) {
           <ResizeMap />
           <ZoomControl position="bottomright" />
           {/* ── FREE tile layer — CartoDB Dark, no API key needed ── */}
-          // ✅ ADD THIS (CartoDB - free, no API key)
+          {/* // ✅ ADD THIS (CartoDB - free, no API key) */}
           <TileLayer
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             attribution="&copy; OpenStreetMap &copy; CARTO"
