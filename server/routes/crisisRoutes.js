@@ -1,7 +1,7 @@
 const express = require('express');
 const CrisisEvent = require('../models/CrisisEvent');
 const Region = require('../models/Region');
-
+const axios = require('axios');
 const router = express.Router();
 
 // GET all crisis events
@@ -13,7 +13,18 @@ router.get('/events', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
+router.get('/ml/predictions', async (req, res) => {
+  try {
+    const response = await axios.get('http://localhost:8000/predict');
+    res.json(response.data);
+  } catch (err) {
+    console.error('ML Engine error:', err.message);
+    res.status(503).json({ 
+      message: 'ML engine unavailable', 
+      predictions: [] 
+    });
+  }
+});
 // GET events by country
 router.get('/events/:countryCode', async (req, res) => {
   try {

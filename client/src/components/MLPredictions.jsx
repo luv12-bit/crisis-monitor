@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-// Inline SVG icons — no external dependency needed
 const Brain = ({ size = 16, color = "currentColor", style }) => (
   <svg
     width={size}
@@ -73,7 +72,7 @@ const Zap = ({ size = 16, color = "currentColor", style }) => (
   </svg>
 );
 
-// ── Session cache (5-min TTL) ─────────────────────────────────────────────────
+// ── Cache cleared on every load to avoid stale empty data ────────────────────
 const CACHE_KEY = "__ml_predictions__";
 const CACHE_TTL = 5 * 60 * 1000;
 
@@ -82,7 +81,12 @@ function getCached() {
     const raw = sessionStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const { data, ts } = JSON.parse(raw);
+    // Reject cache if expired OR if it has no predictions
     if (Date.now() - ts > CACHE_TTL) {
+      sessionStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    if (!data.predictions || data.predictions.length === 0) {
       sessionStorage.removeItem(CACHE_KEY);
       return null;
     }
@@ -94,7 +98,12 @@ function getCached() {
 
 function setCache(data) {
   try {
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, ts: Date.now() }));
+    if (data.predictions && data.predictions.length > 0) {
+      sessionStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({ data, ts: Date.now() }),
+      );
+    }
   } catch {}
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -161,37 +170,53 @@ const skBar = (w, h) => ({
 });
 
 export default function MLPredictions() {
-  const cached = getCached();
-  const [predictions, setPredictions] = useState(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  const [predictions, setPredictions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState(cached ? new Date() : null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [fromCache, setFromCache] = useState(false);
 
   useEffect(() => {
     const fetchML = async () => {
-      try {
-        console.log("Calling ML API...");
-
-        const res = await axios.get(
-          `${process.env.REACT_APP_ML_URL}/predict`,
-        );
-
-        console.log("ML Response:", res.data);
-        console.log("ML ARRAY:", res.data.predictions);
-
-        setPredictions(res.data.predictions);
-        setCache(res.data);
+      // Check for valid non-empty cache first
+      const cached = getCached();
+      if (cached) {
+        setPredictions(cached.predictions);
         setLastUpdated(new Date());
+        setFromCache(true);
+        setLoading(false);
+        return;
+      }
+
+      // No valid cache — always fetch fresh
+      try {
+        console.log(
+          "Fetching ML predictions from:",
+          process.env.REACT_APP_ML_URL,
+        );
+        const res = await axios.get(`${process.env.REACT_APP_ML_URL}/predict`);
+        console.log("ML raw response:", res.data);
+
+        const preds = res.data.predictions || [];
+        setPredictions(preds);
+
+        if (preds.length > 0) {
+          setCache(res.data);
+        }
+
+        setLastUpdated(new Date());
+        setFromCache(false);
       } catch (err) {
-        console.error("ML Error:", err);
+        console.error("ML fetch error:", err);
         setError(true);
       } finally {
         setLoading(false);
       }
     };
 
-    if (!cached) fetchML();
+    fetchML();
   }, []);
+
   if (error)
     return (
       <div
@@ -226,13 +251,12 @@ export default function MLPredictions() {
               fontFamily: "'JetBrains Mono', monospace",
             }}
           >
-            Start your Python FastAPI server locally: uvicorn main:app --port
-            8000
+            Visit {process.env.REACT_APP_ML_URL}/train to wake up the engine,
+            then refresh.
           </p>
         </div>
       </div>
     );
-  // if (error) return null;
 
   return (
     <div style={s.wrapper}>
@@ -249,7 +273,7 @@ export default function MLPredictions() {
           </span>
           {lastUpdated && !loading && (
             <span style={s.updated}>
-              cached ·{" "}
+              {fromCache ? "cached" : "live"} ·{" "}
               {lastUpdated.toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit",
@@ -260,11 +284,13 @@ export default function MLPredictions() {
         <p style={s.sub}>
           {loading
             ? "Running Random Forest model — this may take a moment…"
-            : `Risk scores trained on ${predictions.reduce((a, p) => a + p.eventCount, 0)} crisis events`}
+            : predictions.length === 0
+              ? "No predictions yet. Try visiting /train on the ML engine."
+              : `Risk scores trained on ${predictions.reduce((a, p) => a + (p.eventCount || 0), 0)} crisis events`}
         </p>
       </div>
 
-      {/* Skeleton placeholders while the ML server responds */}
+      {/* Skeleton placeholders while loading */}
       {loading && (
         <div style={s.grid}>
           {Array.from({ length: 8 }).map((_, i) => (
@@ -273,8 +299,39 @@ export default function MLPredictions() {
         </div>
       )}
 
+      {/* Empty state */}
+      {!loading && predictions.length === 0 && (
+        <div
+          style={{
+            textAlign: "center",
+            padding: "48px 24px",
+            color: "#3d6080",
+          }}
+        >
+          <Brain size={40} color="#3d6080" style={{ marginBottom: "16px" }} />
+          <p style={{ fontSize: "14px" }}>No predictions available yet.</p>
+          <p
+            style={{
+              fontSize: "12px",
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
+            Visit{" "}
+            <a
+              href={`${process.env.REACT_APP_ML_URL}/train`}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: "#9b5de5" }}
+            >
+              {process.env.REACT_APP_ML_URL}/train
+            </a>{" "}
+            to train the model first.
+          </p>
+        </div>
+      )}
+
       {/* Real prediction cards */}
-      {!loading && (
+      {!loading && predictions.length > 0 && (
         <div style={s.grid}>
           {predictions
             .filter((p) => p.countryCode !== "WW")
