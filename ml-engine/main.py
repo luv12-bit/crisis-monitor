@@ -5,7 +5,7 @@ from train import train_model
 import os
 
 app = FastAPI()
-
+print("🔥 NEW ML VERSION RUNNING")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
