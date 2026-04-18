@@ -173,7 +173,7 @@ export default function MLPredictions() {
         console.log("Calling ML API...");
 
         const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/predict`,
+          `${process.env.REACT_APP_ML_URL}/predict`,
         );
 
         console.log("ML Response:", res.data);
