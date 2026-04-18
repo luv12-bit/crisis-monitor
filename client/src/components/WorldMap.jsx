@@ -488,15 +488,10 @@ export default function WorldMap({ events = [] }) {
         >
           <ResizeMap />
           <ZoomControl position="bottomright" />
-          {/* ── FREE tile layer — CartoDB Dark, no API key needed ── */}
-          {/* // ✅ ADD THIS (CartoDB - free, no API key) */}
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution="&copy; OpenStreetMap &copy; CARTO"
-            subdomains="abcd"
-            maxZoom={19}
-          />
+          <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+
           {/* ── MARKERS ── */}
+
           {Object.entries(processedData).map(([key, data]) => {
             const type = getTopType(data.events);
             const cfg = TYPE_CONFIG[type] || TYPE_CONFIG.conflict;
