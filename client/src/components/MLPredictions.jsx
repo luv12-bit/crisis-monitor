@@ -177,8 +177,9 @@ export default function MLPredictions() {
         );
 
         console.log("ML Response:", res.data);
+        console.log("ML ARRAY:", res.data.predictions);
 
-        setPredictions(res.data);
+        setPredictions(res.data.predictions);
         setCache(res.data);
         setLastUpdated(new Date());
       } catch (err) {
