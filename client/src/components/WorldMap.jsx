@@ -6,7 +6,6 @@ import {
   ZoomControl,
   useMap,
 } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 import { useState, useEffect, useMemo, useRef } from "react";
 
 // ─── Fix Leaflet default icon issue (common React-Leaflet bug) ───
