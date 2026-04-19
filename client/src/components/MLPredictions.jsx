@@ -194,7 +194,8 @@ export default function MLPredictions() {
           "Fetching ML predictions from:",
           process.env.REACT_APP_ML_URL,
         );
-        const res = await axios.get(`${process.env.REACT_APP_ML_URL}/predict`);
+        const baseUrl = (process.env.REACT_APP_ML_URL || "").replace(/\/+$/, "");
+        const res = await axios.get(`${baseUrl}/predict`);
         console.log("ML raw response:", res.data);
 
         const preds = res.data.predictions || [];
